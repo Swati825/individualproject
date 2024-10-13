@@ -1,133 +1,99 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "e3514a78-a9e9-415f-8a18-625a557e8d71",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import pandas as pd\n",
-    "import streamlit as st\n",
-    "import matplotlib.pyplot as plt\n",
-    "import seaborn as sns\n",
-    "import plotly.express as px\n",
-    "\n",
-    "# Load the dataset\n",
-    "df = pd.read_csv(r'Imports_Exports_Dataset.csv')\n",
-    "\n",
-    "# Sample for performance\n",
-    "df_sample = df.sample(n=3000, random_state=42)\n",
-    "\n",
-    "# Sidebar filters\n",
-    "st.sidebar.title(\"Filters\")\n",
-    "\n",
-    "# Category Filter\n",
-    "categories = df_sample['Category'].unique()\n",
-    "selected_categories = st.sidebar.multiselect(\"Select Categories\", options=categories, default=categories)\n",
-    "\n",
-    "# Import/Export Filter\n",
-    "import_export_options = df_sample['Import_Export'].unique()\n",
-    "selected_import_export = st.sidebar.multiselect(\"Select Import/Export\", options=import_export_options, default=import_export_options)\n",
-    "\n",
-    "# Year filter (based on the Date column)\n",
-    "df_sample['Date'] = pd.to_datetime(df_sample['Date'], format='%d-%m-%Y')\n",
-    "df_sample['Year'] = df_sample['Date'].dt.year\n",
-    "years = df_sample['Year'].unique()\n",
-    "selected_years = st.sidebar.multiselect(\"Select Years\", options=years, default=years)\n",
-    "\n",
-    "# Filter the data based on selections\n",
-    "filtered_df = df_sample[\n",
-    "    (df_sample['Category'].isin(selected_categories)) &\n",
-    "    (df_sample['Import_Export'].isin(selected_import_export)) &\n",
-    "    (df_sample['Year'].isin(selected_years))\n",
-    "]\n",
-    "\n",
-    "# Title\n",
-    "st.title(\"Imports and Exports Dashboard\")\n",
-    "\n",
-    "# Ensure data is not empty\n",
-    "if not filtered_df.empty:\n",
-    "\n",
-    "    # First Row - Pie Chart and Box Plot\n",
-    "    col1, col2 = st.columns(2)\n",
-    "\n",
-    "    with col1:\n",
-    "        # Pie chart for Import/Export breakdown\n",
-    "        transaction_counts = filtered_df['Import_Export'].value_counts()\n",
-    "        st.markdown('### Import vs Export Transactions')\n",
-    "        fig, ax = plt.subplots()\n",
-    "        ax.pie(transaction_counts, labels=transaction_counts.index, autopct='%1.1f%%', colors=['skyblue', 'orange'])\n",
-    "        ax.axis('equal')\n",
-    "        st.pyplot(fig)\n",
-    "\n",
-    "    with col2:\n",
-    "        # Box Plot for Export/Import by Year\n",
-    "        st.markdown(\"### Export/Import Distribution by Year\")\n",
-    "        plt.figure(figsize=(10,6))\n",
-    "        sns.boxplot(x='Year', y='Import_Export', data=filtered_df)\n",
-    "        plt.title(\"Yearly Export/Import Box Plot\")\n",
-    "        st.pyplot(plt)\n",
-    "\n",
-    "    # Second Row - Histogram and Scatter Plot\n",
-    "    col3, col4 = st.columns(2)\n",
-    "\n",
-    "    with col3:\n",
-    "        st.markdown('### Histogram of Transaction Values')\n",
-    "        plt.figure(figsize=(10,6))\n",
-    "        plt.hist(filtered_df['Value'], bins=10, color='green', kde=True)\n",
-    "        plt.title('Distribution of Transaction Values')\n",
-    "        plt.xlabel('Transaction Value')\n",
-    "        plt.ylabel('Frequency')\n",
-    "        st.pyplot(plt)\n",
-    "\n",
-    "    with col4:\n",
-    "        st.markdown('### Scatter Plot: Value vs Year')\n",
-    "        plt.figure(figsize=(10,6))\n",
-    "        sns.scatterplot(x='Year', y='Value', hue='Import_Export', data=filtered_df, palette=['orange', 'blue'])\n",
-    "        plt.title('Scatter Plot of Transaction Value by Year')\n",
-    "        st.pyplot(plt)\n",
-    "\n",
-    "    # Third Row - Bar chart and Line chart\n",
-    "    col5, col6 = st.columns(2)\n",
-    "\n",
-    "    with col5:\n",
-    "        st.markdown('### Transactions by Category')\n",
-    "        category_transaction_counts = filtered_df.groupby('Category')['Value'].sum().reset_index()\n",
-    "        fig = px.bar(category_transaction_counts, x='Category', y='Value', palette='viridis')\n",
-    "        st.plotly_chart(fig)\n",
-    "\n",
-    "    with col6:\n",
-    "        st.markdown('### Average Monthly Transaction Value')\n",
-    "        filtered_df['Month'] = filtered_df['Date'].dt.month\n",
-    "        monthly_avg_value = filtered_df.groupby('Month')['Value'].mean().reset_index()\n",
-    "        fig = px.line(monthly_avg_value, x='Month', y='Value', markers=True)\n",
-    "        st.plotly_chart(fig)\n",
-    "\n",
-    "else:\n",
-    "    st.warning(\"No data available for the selected filters. Please adjust your filters.\")\n"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.12.4"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
-}
+import pandas as pd
+import streamlit as st
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+# Load the dataset
+df = pd.read_csv(r'Imports_Exports_Dataset.csv')
+
+# Sample for performance
+df_sample = df.sample(n=3000, random_state=42)
+
+# Sidebar filters
+st.sidebar.title("Filters")
+
+# Category Filter
+categories = df_sample['Category'].unique()
+selected_categories = st.sidebar.multiselect("Select Categories", options=categories, default=categories)
+
+# Import/Export Filter
+import_export_options = df_sample['Import_Export'].unique()
+selected_import_export = st.sidebar.multiselect("Select Import/Export", options=import_export_options, default=import_export_options)
+
+# Year filter (based on the Date column)
+df_sample['Date'] = pd.to_datetime(df_sample['Date'], format='%d-%m-%Y')
+df_sample['Year'] = df_sample['Date'].dt.year
+years = df_sample['Year'].unique()
+selected_years = st.sidebar.multiselect("Select Years", options=years, default=years)
+
+# Filter the data based on selections
+filtered_df = df_sample[
+    (df_sample['Category'].isin(selected_categories)) &
+    (df_sample['Import_Export'].isin(selected_import_export)) &
+    (df_sample['Year'].isin(selected_years))
+]
+
+# Title
+st.title("Imports and Exports Dashboard")
+
+# Ensure data is not empty
+if not filtered_df.empty:
+
+    # First Row - Pie Chart and Box Plot
+    col1, col2 = st.columns(2)
+
+    with col1:
+        # Pie chart for Import/Export breakdown
+        transaction_counts = filtered_df['Import_Export'].value_counts()
+        st.markdown('### Import vs Export Transactions')
+        fig, ax = plt.subplots()
+        ax.pie(transaction_counts, labels=transaction_counts.index, autopct='%1.1f%%', colors=['skyblue', 'orange'])
+        ax.axis('equal')
+        st.pyplot(fig)
+
+    with col2:
+        # Box Plot for Export/Import by Year
+        st.markdown("### Export/Import Distribution by Year")
+        plt.figure(figsize=(10,6))
+        sns.boxplot(x='Year', y='Import_Export', data=filtered_df)
+        plt.title("Yearly Export/Import Box Plot")
+        st.pyplot(plt)
+
+    # Second Row - Histogram and Scatter Plot
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.markdown('### Histogram of Transaction Values')
+        plt.figure(figsize=(10,6))
+        plt.hist(filtered_df['Value'], bins=20, color='green', edgecolor='black')
+        plt.title('Distribution of Transaction Values')
+        plt.xlabel('Transaction Value')
+        plt.ylabel('Frequency')
+        st.pyplot(plt)
+
+    with col4:
+        st.markdown('### Scatter Plot: Value vs Year')
+        plt.figure(figsize=(10,6))
+        sns.scatterplot(x='Quantity', y='Weight',color='purple', hue='Import_Export', data=filtered_df)
+        plt.title('Scatter Plot of Transaction Value by Year')
+        st.pyplot(plt)
+
+    # Third Row - Bar chart and Line chart
+    col5, col6 = st.columns(2)
+
+    with col5:
+        st.markdown('### Transactions by Category')
+        category_transaction_counts = filtered_df.groupby('Category')['Value'].sum().reset_index()
+        fig = px.bar(category_transaction_counts, x='Category', y='Value', palette='viridis')
+        st.plotly_chart(fig)
+
+    with col6:
+        st.markdown('### Average Monthly Transaction Value')
+        filtered_df['Month'] = filtered_df['Date'].dt.month
+        monthly_avg_value = filtered_df.groupby('Month')['Value'].mean().reset_index()
+        fig = px.line(monthly_avg_value, x='Month', y='Value', markers=True)
+        st.plotly_chart(fig)
+
+else:
+    st.warning("No data available for the selected filters. Please adjust your filters.")
