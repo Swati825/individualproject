@@ -67,7 +67,7 @@ if not filtered_df.empty:
     with col3:
         st.markdown('### Histogram of Transaction Values')
         plt.figure(figsize=(10,6))
-        plt.hist(filtered_df['Value'], bins=20, color='#1f77b4', edgecolor='black')
+        plt.hist(filtered_df['Value'], bins=20, color='green', edgecolor='black')
         plt.title('Distribution of Transaction Values')
         plt.xlabel('Transaction Value')
         plt.ylabel('Frequency')
@@ -93,7 +93,7 @@ if not filtered_df.empty:
         st.markdown('### Average Monthly Transaction Value')
         filtered_df['Month'] = filtered_df['Date'].dt.month
         monthly_avg_value = filtered_df.groupby('Month')['Value'].mean().reset_index()
-        fig = px.line(monthly_avg_value, x='Month', y='Value', markers=True)
+        fig = px.line(monthly_avg_value, x='Month', y='Value', markers=True, color='purple')
         st.plotly_chart(fig)
 
 else:
